@@ -1,0 +1,4 @@
+numpy
+pillow
+ffpyplayer
+opencv-python
