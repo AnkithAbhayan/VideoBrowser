@@ -36,13 +36,21 @@ class Client:
     def load_files(self,path):
         self.client_data = []
         if path:
-            self.client_data = os.listdir(path)
+            new=""
+            for l in path:
+                if l=="/":
+                    new+="\\"
+                else:
+                    new+=l
+            self.path=new
+            self.client_data = os.listdir(self.path)
+
         new=[]
         for i in range(len(self.client_data)):
             if self.client_data[i][-4:] in [".mp4",".mkv",".mov",".flv",".avi"]:
                 new.append(self.client_data[i])
         self.client_data = new
-        return self.client_data
+        return self.client_data, self.path
 
     def save_path(self,path):
         data = {"path":path}

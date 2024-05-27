@@ -240,8 +240,7 @@ class Gui:
 
             self.chg+=len(self.data)
             self.framelog = []
-            self.path = path
-            self.data = self.MyClient.load_files(self.path)
+            self.data,self.path = self.MyClient.load_files(path)
             self.first = [True for i in range(len(self.data))]
 
             self.widgets()
@@ -359,6 +358,7 @@ class Gui:
             framesno = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
             start,end = framesno//10, framesno-framesno//10
             number = randint(start,end)
+            print(filepath)
             self.framelog.append(number)
             if cap.isOpened() == False:
                 print("error opening video file")
