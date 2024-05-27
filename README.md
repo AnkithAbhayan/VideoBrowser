@@ -9,5 +9,6 @@ pip install -r requirements.txt
 ```
 ## Execution
 ```
-python main.py
+python main.py [path]
 ```
+- Note: path argument is optional.
