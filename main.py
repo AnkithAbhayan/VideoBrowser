@@ -39,7 +39,7 @@ class Client:
             self.client_data = os.listdir(path)
         new=[]
         for i in range(len(self.client_data)):
-            if self.client_data[i][-4:] == ".mp4":
+            if self.client_data[i][-4:] in [".mp4",".mkv",".mov",".flv",".avi"]:
                 new.append(self.client_data[i])
         self.client_data = new
         return self.client_data
