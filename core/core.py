@@ -31,10 +31,17 @@ class Gui:
         self.n=None
         self.first=[True for i in range(len(self.data))]
         self.framelog = []
+        self.c=""
         self.thread_start = False
+        
         self.root.attributes('-fullscreen', True)
         self.root.bind("1", lambda event: self.togglewindowstate())
         self.root.bind("<Button-1>", self.callback)
+
+        self.scr_height = self.root.winfo_screenheight()
+        self.scr_width = self.root.winfo_screenwidth()
+        self.thumbx = (self.scr_width-105)//2
+        self.thumby = (self.thumbx*9)//16
 
         self.mainlogo = ImageTk.PhotoImage(Image.open('assets/logo.png'))
         self.logo_pic = ImageTk.PhotoImage(Image.open('assets/logo.png').resize((55,55)))
@@ -42,14 +49,12 @@ class Gui:
         self.fullscreen_pic = ImageTk.PhotoImage(Image.open(f"assets/fullscreen.png").resize((35,35)))
         self.close_pic = ImageTk.PhotoImage(Image.open(f"assets/close.png").resize((35,35)))
         self.up_arrow_pic = ImageTk.PhotoImage(Image.open(f"assets/up_arrow.png").resize((50,50)))
-
-        self.scr_height = self.root.winfo_screenheight()
-        self.scr_width = self.root.winfo_screenwidth()
-        self.c=""
-        self.thumbx = (self.scr_width-105)//2
-        self.thumby = (self.thumbx*9)//16 
+        self.frontpage_pic = ImageTk.PhotoImage(Image.open(f"assets/frontpage.png").resize((self.scr_width-20,self.scr_height)))
+ 
         self.loading_screen()
-        self.widgets()
+        
+        widthread = threading.Thread(target=lambda:self.widgets())
+        widthread.start()
 
         linethread = threading.Thread(target=lambda:self.drawline())
         self.canvas.after(1000, lambda:linethread.start())
@@ -161,9 +166,10 @@ class Gui:
                         l=[c-2,c-1,c,c+1]
             self.thread_start = True
             for i in l:
-                filepath=self.path +"\\"+self.data[i]
-                function1 = threading.Thread(target=lambda:self.preview(filepath,i))
-                function1.start()
+                if i in range(len(self.data)):
+                    filepath=self.path +"\\"+self.data[i]
+                    function1 = threading.Thread(target=lambda:self.preview(filepath,i))
+                    function1.start()
 
     def on_leave(self,*h):
         self.thread_start = False
@@ -243,9 +249,21 @@ class Gui:
             self.data,self.path = self.MyClient.load_files(path)
             self.first = [True for i in range(len(self.data))]
 
-            self.widgets()
+            widthread = threading.Thread(target=lambda:self.widgets())
+            widthread.start()
+
             thread = threading.Thread(target=self.transition)
             self.root.after(2000, lambda:thread.start())
+        elif x>20 and x<75 and y>10 and y<65:
+            self.canvas2.grid_forget()
+            self.canvas.grid(row=0,column=0,sticky="EW")
+            self.canvas2.delete("thumbs")
+            self.canvas2.destroy()
+            self.chg+=len(self.data)
+            self.framelog = []
+            self.data,self.path=[],""
+            self.widgets()
+            self.transition()
 
         elif x>self.scr_width-200 and x<self.scr_width-165 and y>33 and y<68:
             self.togglewindowstate()
@@ -282,7 +300,6 @@ class Gui:
             self.root, width = self.root.winfo_screenwidth()-20,height = self.scr_height,
             relief='flat',highlightthickness=0,scrollregion=(0,0,700,h)
         )
-        
         self.canvas2.configure(bg=self.hex_from_rgb((255,253,235)))
 
         self.vbar=Scrollbar(self.root,orient=VERTICAL)
@@ -295,19 +312,20 @@ class Gui:
 
         self.canvas2.config(xscrollcommand=self.hbar.set, yscrollcommand=self.vbar.set,yscrollincrement=10)
 
-        self.canvas2.create_rectangle(0,0,self.scr_width-20,75,fill="antique white",width=0)
-        self.canvas2.create_line(0,75,self.scr_width-20,75,width=1,fill="grey")
+        if h>self.scr_height*1.5:
+            self.canvas2.create_image(self.scr_width-95,h-210,image=self.up_arrow_pic,anchor="nw")
+        if len(self.data)==0:
+            #self.textlabelmaker(30,100,375,130,color="bisque",tag='_preview')
+            #self.canvas2.create_text(30,102,text=f"Click on the folder icon to pick a folder.",anchor="nw",font=("Liberation Serif",15))
+            self.canvas2.create_image(0,0,image=self.frontpage_pic,anchor="nw")
+        else:
+            self.canvas2.create_rectangle(0,0,self.scr_width-20,75,fill="antique white",width=0)
+            self.canvas2.create_line(0,75,self.scr_width-20,75,width=1,fill="grey")
 
         self.canvas2.create_image(20,10,image=self.logo_pic,anchor="nw")
         self.canvas2.create_image(self.scr_width-160,33,image=self.folder_pic,anchor="nw")
         self.canvas2.create_image(self.scr_width-200,33,image=self.fullscreen_pic,anchor="nw")
         self.canvas2.create_image(self.scr_width-240,33,image=self.close_pic,anchor="nw")
-
-        if h>self.scr_height*1.5:
-            self.canvas2.create_image(self.scr_width-95,h-210,image=self.up_arrow_pic,anchor="nw")
-        if len(self.data)==0:
-            self.textlabelmaker(30,100,375,130,color="bisque",tag='_preview')
-            self.canvas2.create_text(30,102,text=f"Click on the folder icon to pick a folder.",anchor="nw",font=("Liberation Serif",15))
 
 
         self.textlabelmaker(self.scr_width-165,7,self.scr_width-40,27,color="cyan",tag='_preview')
@@ -358,7 +376,6 @@ class Gui:
             framesno = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
             start,end = framesno//10, framesno-framesno//10
             number = randint(start,end)
-            print(filepath)
             self.framelog.append(number)
             if cap.isOpened() == False:
                 print("error opening video file")
