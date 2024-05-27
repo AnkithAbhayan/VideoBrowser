@@ -5,5 +5,8 @@
 git clone "https://github.com/AnkithAbhayan/VideoBrowser" VideoBrowser
 cd VideoBrowser
 pip install -r requirements.txt
+```
+## Execution
+```
 python main.py
 ```
