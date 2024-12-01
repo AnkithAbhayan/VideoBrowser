@@ -25,25 +25,12 @@ class Client:
                 print("Invalid path argument. Skipping.")
             self.save_path("")
             self.path=""
-        new=""
-        for l in self.path:
-            if l=="/":
-                new+="\\"
-            else:
-                new+=l
-        self.path=new
 
     def load_files(self,path):
         self.client_data = []
         if path:
-            new=""
-            for l in path:
-                if l=="/":
-                    new+="\\"
-                else:
-                    new+=l
-            self.path=new
-            self.client_data = os.listdir(self.path)
+            self.path=path
+            self.client_data = [os.path.join(self.path,item) for item in os.listdir(self.path)]
 
         new=[]
         for i in range(len(self.client_data)):

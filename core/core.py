@@ -167,7 +167,7 @@ class Gui:
             self.thread_start = True
             for i in l:
                 if i in range(len(self.data)):
-                    filepath=self.path +"\\"+self.data[i]
+                    filepath=self.data[i]
                     function1 = threading.Thread(target=lambda:self.preview(filepath,i))
                     function1.start()
 
@@ -371,7 +371,7 @@ class Gui:
         #updating the labels to display images
         i = 0
         for value in self.data:
-            filepath = self.path+"\\"+value
+            filepath = value
             cap = cv2.VideoCapture(filepath)
             framesno = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
             start,end = framesno//10, framesno-framesno//10
