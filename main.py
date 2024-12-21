@@ -17,7 +17,7 @@ class Client:
         
         if len(args)>1:
             self.path=args[1]
-    
+        
         if not os.path.isdir(self.path):
             if len(args)==1:
                 print("No path detected. Continuing.")

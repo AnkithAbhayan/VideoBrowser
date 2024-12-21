@@ -7,7 +7,7 @@ import time
 
 from PIL import Image, ImageTk
 from ffpyplayer.player import MediaPlayer
-from tkinter import Tk, Label, Button, PhotoImage, CENTER, VERTICAL, HORIZONTAL, Canvas, Scrollbar, CHORD,filedialog
+from tkinter import Tk, Label, Button, PhotoImage, CENTER, VERTICAL, HORIZONTAL, Canvas, Scrollbar, CHORD, filedialog
 from random import randint
 
 class Gui:
@@ -27,6 +27,23 @@ class Gui:
             "count":"1",
             "audio":"on"
         }
+
+        self.colors = {
+            "bg":self.hex_from_rgb((255, 253, 235)),
+            "menu_bg":self.hex_from_rgb((250, 235, 215)),
+            "bottom_bg":self.hex_from_rgb((0, 0, 0)),
+            "bottom_text_bg":self.hex_from_rgb((100, 100, 100)),
+            "top_line":self.hex_from_rgb((200, 200, 200)),
+            "loading_line":self.hex_from_rgb((90, 90, 90)),
+            "vid_title_label":self.hex_from_rgb((255, 228, 196)),
+            "vid_border_inactive":self.hex_from_rgb((255, 140, 105)),
+            "vid_border_active":self.hex_from_rgb((255, 215, 0)),
+            "preview_label_bg":self.hex_from_rgb((0, 255, 255)),
+            "count_label_bg":self.hex_from_rgb((50, 205, 50)),
+            "audio_label_bg":self.hex_from_rgb((204, 255, 0)),
+            "count_audio_disabled":self.hex_from_rgb((200, 200, 200))
+        }
+
         self.chg=0
         self.n=None
         self.first=[True for i in range(len(self.data))]
@@ -48,8 +65,8 @@ class Gui:
         self.folder_pic = ImageTk.PhotoImage(Image.open(f"assets/folder.png").resize((35,35)))
         self.fullscreen_pic = ImageTk.PhotoImage(Image.open(f"assets/fullscreen.png").resize((35,35)))
         self.close_pic = ImageTk.PhotoImage(Image.open(f"assets/close.png").resize((35,35)))
-        self.up_arrow_pic = ImageTk.PhotoImage(Image.open(f"assets/up_arrow.png").resize((50,50)))
-        self.frontpage_pic = ImageTk.PhotoImage(Image.open(f"assets/frontpage.png").resize((self.scr_width-20,self.scr_height)))
+        self.up_arrow_pic = ImageTk.PhotoImage(Image.open(f"assets/scrolltotop.png").resize((40,40)))
+        self.frontpage_pic = ImageTk.PhotoImage(Image.open(f"assets/frontpage.png").resize((self.scr_width-10,self.scr_height)))
  
         self.loading_screen()
         
@@ -73,16 +90,16 @@ class Gui:
 
     def transition(self):
         self.canvas.grid_forget()
-        self.canvas2.grid(row=0,column=0,sticky="EW")
+        self.canvas2.grid(row=0,column=0,sticky="NSEW")
         self.canvas.delete("line")
         self.canvas.delete("line2")
-        self.canvas.configure(bg=self.hex_from_rgb((255,253,235)))
+        self.canvas.configure(bg=self.colors["bg"])
 
     def drawline(self):
         for i in range(-95,96,2):
-            self.canvas.create_line(self.scr_width//2-95,self.scr_height//2+125,self.scr_width//2+i,self.scr_height//2+125,width=2,fill=self.hex_from_rgb((90,90,90)),tags=("line"))
+            self.canvas.create_line(self.scr_width//2-95,self.scr_height//2+125,self.scr_width//2+i,self.scr_height//2+125,width=2,fill=self.colors["loading_line"],tags=("line"))
             self.canvas.delete("line2")
-            self.canvas.create_line(self.scr_width//2-95,self.scr_height//2+125,self.scr_width//2+i+1,self.scr_height//2+125,width=2,fill=self.hex_from_rgb((90,90,90)),tags=("line2"))
+            self.canvas.create_line(self.scr_width//2-95,self.scr_height//2+125,self.scr_width//2+i+1,self.scr_height//2+125,width=2,fill=self.colors["loading_line"],tags=("line2"))
             self.canvas.delete("line")
             time.sleep(0.015)
         self.transition()
@@ -145,7 +162,7 @@ class Gui:
     def on_enter(self,*h):
         if ".!label" in str(h[0].widget):
             n = h[0].widget
-            n.config(bg="gold")
+            n.config(bg=self.colors["vid_border_active"])
             self.n = n
             try:
                 c = int(str(n)[7:])-1-self.chg
@@ -177,15 +194,15 @@ class Gui:
             self.n.config(bg="salmon")
         self.c=""
 
-    def run_vlc(self, paths):
+    def run_vlc(self, path):
         print("Playing video(s)")
-        path=self.path+"\\"+paths
         print(path)
-        os.system(f"start vlc \"{path}\"")
+        print(f"vlc \"{path}\"")
+        os.system(f"vlc \"{path}\"&")
 
     def textlabelmaker(self,x1,y1,x2,y2,color,tag):
         self.canvas2.create_arc(x1-12,y1,x1+11,y2-1,start=90,extent=180,fill=color,width=0,style=CHORD,outline="",tags=(tag))
-        self.canvas2.create_arc(x2-12,y1,x2+11,y2-1,start=270,extent=180,fill=color,width=0,style=CHORD,outline="",tags=(tag))
+        self.canvas2.create_arc(x2-11,y1,x2+10,y2-1,start=270,extent=180,fill=color,width=0,style=CHORD,outline="",tags=(tag))
         self.canvas2.create_rectangle(x1,y1,x2,y2,fill=color,width=0,outline=color,tags=(tag))
 
     def callback(self,event):
@@ -272,7 +289,7 @@ class Gui:
             self.canvas2.destroy()
             self.root.destroy()
             sys.exit()
-        elif self.h>self.scr_height*1.5 and x>self.scr_width-95 and x<self.scr_width-45 and y>self.h-210 and y<self.h-160:
+        elif self.h>self.scr_height*1.1 and x>self.scr_width-80 and x<self.scr_width-40 and y>self.h-140 and y<self.h-100:
             thread = threading.Thread(target=lambda:self.smoothscrolltotop())
             thread.start()
         elif self.c!="": 
@@ -280,8 +297,8 @@ class Gui:
             self.run_vlc(self.data[self.c])
 
     def smoothscrolltotop(self):   
-        for i in range(100,-1,-1):
-            self.canvas2.yview_moveto(i/100)
+        for i in range(1000,-1,-1):
+            self.canvas2.yview_moveto(i/1000)
 
     def widgets(self):
         small_font = ("Verdana", 10)
@@ -297,30 +314,23 @@ class Gui:
         self.h=h
 
         self.canvas2 = Canvas(
-            self.root, width = self.root.winfo_screenwidth()-20,height = self.scr_height,
-            relief='flat',highlightthickness=0,scrollregion=(0,0,700,h)
+            self.root, width = self.root.winfo_screenwidth()-15,height = self.scr_height,
+            relief='flat',highlightthickness=0,scrollregion=(0,0,700,h), bg=self.colors["bg"]
         )
-        self.canvas2.configure(bg=self.hex_from_rgb((255,253,235)))
 
         self.vbar=Scrollbar(self.root,orient=VERTICAL)
-        self.vbar.grid(row=0, column=1,sticky="NSEW")
+        self.vbar.grid(row=0, column=1,sticky="NSEW",padx=0)
         self.vbar.config(command=self.canvas2.yview)
 
-        self.hbar=Scrollbar(self.root,orient=HORIZONTAL)
-        self.hbar.grid(row=1,column=0)
-        self.hbar.config(command=self.canvas2.xview)
+        self.canvas2.config(yscrollcommand=self.vbar.set,yscrollincrement=10)
 
-        self.canvas2.config(xscrollcommand=self.hbar.set, yscrollcommand=self.vbar.set,yscrollincrement=10)
-
-        if h>self.scr_height*1.5:
-            self.canvas2.create_image(self.scr_width-95,h-210,image=self.up_arrow_pic,anchor="nw")
         if len(self.data)==0:
             #self.textlabelmaker(30,100,375,130,color="bisque",tag='_preview')
             #self.canvas2.create_text(30,102,text=f"Click on the folder icon to pick a folder.",anchor="nw",font=("Liberation Serif",15))
             self.canvas2.create_image(0,0,image=self.frontpage_pic,anchor="nw")
         else:
-            self.canvas2.create_rectangle(0,0,self.scr_width-20,75,fill="antique white",width=0)
-            self.canvas2.create_line(0,75,self.scr_width-20,75,width=1,fill="grey")
+            self.canvas2.create_rectangle(0,0,self.scr_width-15,75,fill=self.colors["menu_bg"],width=0)
+            self.canvas2.create_line(0,75,self.scr_width-15,75,width=1,fill=self.colors["top_line"])
 
         self.canvas2.create_image(20,10,image=self.logo_pic,anchor="nw")
         self.canvas2.create_image(self.scr_width-160,33,image=self.folder_pic,anchor="nw")
@@ -328,12 +338,12 @@ class Gui:
         self.canvas2.create_image(self.scr_width-240,33,image=self.close_pic,anchor="nw")
 
 
-        self.textlabelmaker(self.scr_width-165,7,self.scr_width-40,27,color="cyan",tag='_preview')
+        self.textlabelmaker(self.scr_width-165,7,self.scr_width-40,27,color=self.colors["preview_label_bg"],tag='_preview')
         self.canvas2.create_text(self.scr_width-170,8,text=f"Preview Mode: {self.modes['preview']}",anchor="nw",font=("Liberation Serif",10),tags=("preview"))
 
-        color=['lime','green yellow']
+        color=[self.colors["count_label_bg"],self.colors["audio_label_bg"]]
         if self.modes['preview']=="disabled":
-            color=['grey','grey']
+            color=[self.colors["count_audio_disabled"],self.colors["count_audio_disabled"]]
 
         self.textlabelmaker(self.scr_width-95,29,self.scr_width-40,49,color=color[0],tag="_count")
         self.canvas2.create_text(self.scr_width-95,30,anchor="nw",font=("Liberation Serif",10),text=f"count:  {self.modes['count']}",tags=("count"))
@@ -354,18 +364,21 @@ class Gui:
                 y=((c-1)//2)*(self.thumby+100)+100 
 
             self.canvas2.create_window(x,y,window=self.thumbnail_images[-1],anchor="nw",tags=("thumbs"))
-            self.canvas2.create_arc(x+5,y+self.thumby+15,x+40,y+self.thumby+48,start=90,extent=180,fill="bisque",width=0,style=CHORD,outline="")
-            self.canvas2.create_arc(x+self.thumbx-45,y+self.thumby+15,x+self.thumbx-10,y+self.thumby+48,start=270,extent=180,fill="bisque",width=0,style=CHORD,outline="")
-            self.canvas2.create_rectangle(x+23,y+self.thumby+15,x+self.thumbx-28,y+self.thumby+49,fill="bisque",width=0)
+            self.canvas2.create_arc(x+5,y+self.thumby+15,x+40,y+self.thumby+48,start=90,extent=180,fill=self.colors["vid_title_label"],width=0,style=CHORD,outline="")
+            self.canvas2.create_arc(x+self.thumbx-47,y+self.thumby+15,x+self.thumbx-12,y+self.thumby+48,start=270,extent=180,fill=self.colors["vid_title_label"],width=0,style=CHORD,outline="")
+            self.canvas2.create_rectangle(x+23,y+self.thumby+15,x+self.thumbx-28,y+self.thumby+49,fill=self.colors["vid_title_label"],width=0)
 
             txt = self.canvas2.create_text(x+20,y+self.thumby+20,anchor="nw",font=("Liberation Serif",15),text="loading...")
             self.titlenames.append(txt)
             c+=1
 
-        self.canvas2.create_rectangle(0,h-150,self.scr_width-20,h,fill="black",width=0)
-        self.canvas2.create_text(20,h-140, anchor="nw",font=("Consolas",12), text="Built by Ankith Abhayan.",fill="grey")
-        self.edit_thumbnail()
+        self.canvas2.create_rectangle(0,h-150,self.scr_width-15,h,fill=self.colors["bottom_bg"],width=0)
+        self.canvas2.create_text(20,h-140, anchor="nw",font=("Consolas",12), text="Built by Ankith Abhayan.",fill=self.colors["bottom_text_bg"])
         
+        if h>self.scr_height*1.1:
+            self.canvas2.create_image(self.scr_width-80,h-140,image=self.up_arrow_pic,anchor="nw")
+        
+        self.edit_thumbnail()
 
     def edit_thumbnail(self):
         #updating the labels to display images
